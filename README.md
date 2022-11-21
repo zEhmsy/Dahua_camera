@@ -22,8 +22,8 @@ All my project to train openCV library in python
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/zEhmsy/Dahua_camera/blob/main/project_icon.png">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://github.com/zEhmsy/Dahua_camera/project_icon">
+    <img src="project_icon.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">DAHUA HTML API CONTROLLER</h3>
