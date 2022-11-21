@@ -1,5 +1,4 @@
 # Dahua_camera
-All my project to train openCV library in python
 <div id="top"></div>
 
 <!-- PROJECT SHIELDS -->
