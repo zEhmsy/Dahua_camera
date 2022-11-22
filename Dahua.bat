@@ -1,10 +1,10 @@
 @echo off
 chcp 65001
 rem Impostato le variabili iniziali
-set TempCamIP1=110
-set RegularCamIP1=10
+set TempCamIP1=
+set RegularCamIP1=
 set Subnet=XXX
-Set NetworkIP=10.0.
+Set NetworkIP=192.168.
 set TempPass=Aa142358
 Set RegularPass=QwErTy132465
 Set EmailPassword=qwerty123456
@@ -15,10 +15,10 @@ set FTPLogin=-
 set FTPPass=-
 set MashineName=-
 set ShowTitleName=-
-set FTPADRESS=10.0.0.9
-set PingAdress=10.0.0.10
+set FTPADRESS=192.168.0.9
+set PingAdress=192.168.0.10
 set TempDirectory=C:\Temp
-set 1NVRIP=10.0.0.10
+set 1NVRIP=192.168.0.10
 set NVRLogin=admin
 set NVRPassword=admin
 set passwordshop1=UctJBDMBEAwkCu
@@ -81,30 +81,30 @@ echo                                                      menu principale.
 echo      ************************************************************************************************************
 echo.
 echo      0 - Cancella tutte le variabili.
-echo      1 - Imposta una password temporanea                                   Task - "%TempPass%"
-echo      2 - Imposta una password permanente                                   Task - "%RegularPass%"
-echo      3 - Imposta MTU                                                       Task - "%MTU%"
+echo      1 - Imposta una password temporanea                                   Dato - "%TempPass%"
+echo      2 - Imposta una password permanente                                   Dato - "%RegularPass%"
+echo      3 - Imposta MTU                                                       Dato - "%MTU%"
 echo      4 - Imposta la rete                                                   Dato  - "%NetworkIP%%Subnet%.0"
 echo. 
 echo      -----------------------------------------------------------------------------------------------------------
 echo.
 echo      a - Specifica la sottorete                                            Dato - "%Subnet%"
 echo      s - Specificare il nome della macchina                                Dato - "%MashineName%"
-echo      d - Imposta il nome del title                                         Dato - "%ShowTitleName%"
+echo      d - Imposta un titolo                                                 Dato - "%ShowTitleName%"
 echo      f - Impostare login e password per FTP                                Login:%FTPLogin%
 echo                                                                            Password:%FTPPass%
 echo.
 echo      g - Impostare la data dell'operazione                                 Inizio: %startworkday%
 echo                                                                            Fine:  %endworkday%
-echo.
 echo      -----------------------------------------------------------------------------------------------------------
 echo      5 - Regola la fotocamera %NetworkIP%%Subnet%.%TempCamIP1%   
-echo      6 - Cambio temporaneo IP
-echo      7 - Modificare l'IP che verrà assegnato
+echo      6 - Cambio dell'IP temporaneo
+echo      7 - Assegna permanentemente l'IP
+echo      t - Test ping %NetworkIP%%Subnet%.%TempCamIP1%
 echo.
 echo      9 - TORNA AL MENU INIZIALE  (Configurazione telecamera/Gestione NVR)
 echo      p - Esci
-CHOICE /N /C 0123asdfg45678p
+CHOICE /N /C 0123asdfg4567t9p
 if %errorlevel%==1 GoTO ClearVAR
 if %errorlevel%==2 GoTo SetTempPass
 if %errorlevel%==3 GoTO SetRegularPass
@@ -118,8 +118,26 @@ if %errorlevel%==10 GoTO SetNetworkIP
 if %errorlevel%==11 GoTo ConfigGWCam
 if %errorlevel%==12 GoTo SetTempCamIP1
 if %errorlevel%==13 GoTo SetRegularCamIP1
-if %errorlevel%==14 GoTo START-MENU
-if %errorlevel%==15 GoTo DelandExit
+if %errorlevel%==14 GoTO PingIP
+if %errorlevel%==15 GoTo START-MENU
+if %errorlevel%==16 GoTo DelandExit
+
+
+:PingIP
+CLS
+rem colore blu
+color 1F 
+echo      ************************************************************************************************************
+echo                                                DAHUA HTTP API CONFIGURATOR
+echo      ************************************************************************************************************
+echo                                                          Ping
+echo      ************************************************************************************************************
+echo      Testo che la telecamera sia raggiungibile
+echo.
+    ping %NetworkIP%%Subnet%.%TempCamIP1% -t -l %MTU% -f -n 4
+echo.
+pause
+GoTO MENU-0
 
 
 
@@ -177,8 +195,14 @@ color 1F
 echo      ************************************************************************************************************
 echo                                                DAHUA HTTP API CONFIGURATOR
 echo      ************************************************************************************************************
-echo                                Modifica dell'indirizzo permanente della telecamera
+echo                                    Modifica permanente dell'indirizzo della telecamera
 echo      ************************************************************************************************************
+if not defined subnetset echo Nessun Dato di sottorete. Ulteriori azioni senza questo parametro sono inutili.
+if not defined subnetset Choice /N /T 5 /D N /M "Dopo 5 secondi si apriranno le impostazioni della sottorete"
+if not defined subnetset GoTo SetSubnet
+if not defined TempCamIP1 echo Indirizzo IP incorretto. Ulteriori azioni senza questo parametro sono inutili.
+if not defined TempCamIP1 Choice /N /T 5 /D N /M "Dopo 5 secondi si apriranno le impostazioni della configurazione dell'IP"
+if not defined TempCamIP1 GoTo GWCamChangeIPfromTemptoUserDefined
 echo      Immettere l'indirizzo che verrà impostato sulla telecamera dopo aver chiamato il comando appropriato. 
 echo      Questo indirizzo verrà utilizzato per il comando che modificherà l'indirizzo IP da temporaneo a permanente.
 echo.
@@ -191,12 +215,15 @@ echo.
 echo.
 echo.
 set /p RegularCamIP1=Immettere l'indirizzo della telecamera (3 cifre):
+echo     Cambio l'indirizzo della telecamera
+curl --user admin:%RegularPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&Network.eth0.IPAddress=%NetworkIP%%Subnet%.%RegularCamIP1%
+set TempCamIP1=%RegularCamIP1%
 GoTO MENU-0
 
 
 :ClearVAR
 set Subnet=XXX
-Set NetworkIP=10.0.
+Set NetworkIP=192.168.
 set TempPass=Aa142358
 Set RegularPass=Tvvf14235867
 Set MTU=1422
@@ -210,9 +237,9 @@ set GWCamFTP=
 set GWCamPhone=
 set GWCamEmail=
 set GWCamPIR=
-set TempCamIP1=109
-set RegularCamIP1=10
-set PingAdress=10.0.0.10
+set TempCamIP1=228
+set RegularCamIP1=100
+set PingAdress=192.168.0.10
 GoTO MENU-0
 
 
@@ -440,20 +467,24 @@ echo      **********************************************************************
 echo                                           Camera settings menu %NetworkIP%%Subnet%.%TempCamIP1%
 echo      ************************************************************************************************************
 if not defined subnetset echo Nessun Dato di sottorete. Ulteriori azioni senza questo parametro sono inutili.
-if not defined subnetset Choice /N /T 10 /D N /M "Dopo 10 secondi si apriranno le impostazioni della sottorete"
+if not defined subnetset Choice /N /T 5 /D N /M "Dopo 5 secondi si apriranno le impostazioni della sottorete"
 if not defined subnetset GoTo SetSubnet
+if not defined TempCamIP1 echo Indirizzo IP incorretto. Ulteriori azioni senza questo parametro sono inutili.
+if not defined TempCamIP1 Choice /N /T 5 /D N /M "Dopo 5 secondi si apriranno le impostazioni della configurazione dell'IP"
+if not defined TempCamIP1 GoTo SetTempCamIP1
 echo      0 - Regolazione automatica
-echo      1 - Cambia solo indirizzo IP e password.
+echo      1 - Cambia indirizzo IP e password
 echo      2 - Modifica individualmente ogni parametro specifico
 echo      3 - Informazioni dalla MicroSD
 echo      4 - Riavvia la fotocamera
 echo      5 - Fai uno screenshot
+echo      6 - Leggi dati Termografici
 echo      p - Torna al menu principale
 echo.
 echo.
 echo.
 echo.
-CHOICE /N /C 012p345 /M "Seleziona l'azione sopra descritta ˄ ˄ ˄ ˄ ˄ ˄ ˄"
+CHOICE /N /C 012p3456 /M "Seleziona l'azione sopra descritta ˄ ˄ ˄ ˄ ˄ ˄ ˄"
 if %errorlevel%==1 GoTO GWCamAutoConfigure
 if %errorlevel%==2 GoTo GWCamIP&PASSConfigure
 if %errorlevel%==3 GoTo GWCamSinglyConfigurefirst
@@ -461,6 +492,7 @@ if %errorlevel%==4 GoTo MENU-0
 if %errorlevel%==5 GoTo GWCamGetMicroSD
 if %errorlevel%==6 GoTo GWCamReboot
 if %errorlevel%==7 GoTo GWGetSnapshotandSendfromEmail
+if %errorlevel%==8 GoTO GWThermographyOptions
 
 
 :GWCamGetMicroSD
@@ -528,7 +560,7 @@ curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%Tem
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&AutoMaintain.AutoRebootDay=1"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&AutoMaintain.AutoRebootHour=7&AutoMaintain.AutoRebootMinute=0"
 Echo      Accendo e configuro NTP
-curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Address=10.0.0.1"
+curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Address=192.168.0.1"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Port=123"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.TimeZone=2"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Enable=true"
@@ -620,8 +652,9 @@ if %errorlevel%==2 GoTo ConfigGWCam
 Echo     Sto cambiando la password
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/userManager.cgi?action=modifyPassword&name=admin&pwd=%RegularPass%&pwdOld=%TempPass%"
 Echo     Cambio l'indirizzo della telecamera
-curl --user admin:%RegularPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&Network.eth0.IPAddress=%NetworkIP%%Subnet%.%RegularCamIP1%"
-Choice /N /T 15 /D N /M "Через 15 сек. буде відкрито головне меню"
+curl --user admin:%RegularPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&Network.eth0.IPAddress=%NetworkIP%%Subnet%.%RegularCamIP1%
+set TempCamIP1=%RegularCamIP1%
+Choice /N /T 15 /D N /M "Dopo 15 secondi si aprirà il menu principale"
 GoTO MENU-0
 
 :GWCamIP&PASSConfigure
@@ -629,6 +662,7 @@ Echo     Sto cambiando la password
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/userManager.cgi?action=modifyPassword&name=admin&pwd=%RegularPass%&pwdOld=%TempPass%"
 Echo     Cambio l'indirizzo della telecamera
 curl --user admin:%RegularPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&Network.eth0.IPAddress=%NetworkIP%%Subnet%.%RegularCamIP1%"
+set TempCamIP1=%RegularCamIP1%
 Choice /N /T 15 /D N /M "Dopo 15 secondi si aprirà il menu principale"
 GoTO MENU-0
 
@@ -664,6 +698,8 @@ set GWCamNTP=No
 set GWCamDST=No
 set GWCamPIR=
 set GWCamEmail=
+
+
 :GWCamSinglyConfigure
 cls
 color 75
@@ -673,7 +709,7 @@ echo      **********************************************************************
 echo                          Modifica di ciascuna impostazione specifica per la fotocamera %NetworkIP%%Subnet%.%TempCamIP1%
 echo      ************************************************************************************************************
 if not defined subnetset echo Nessuna Dato di sottorete. Ulteriori azioni senza questo parametro verranno ignorate.
-if not defined subnetset Choice /N /T 10 /D N /M "Dopo 10 secondi si apriranno le impostazioni della sottorete"
+if not defined subnetset Choice /N /T 5 /D N /M "Dopo 5 secondi si apriranno le impostazioni della sottorete"
 if not defined subnetset GoTo SetSubnet
 echo      q - Questa fotocamera invia foto tramite FTP                           Dato: %GWCamFTP%
 echo      w - Viene visualizzata sui telefoni?                                   Dato: %GWCamPhone%
@@ -751,7 +787,7 @@ GoTo GWCamSinglyConfigure
 
 :GWCamNTP
 Echo      Accendo e configuro NTP
-curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Address=10.0.0.1"
+curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Address=192.168.0.1"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Port=123"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.TimeZone=2"
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&NTP.Enable=true"
@@ -863,6 +899,7 @@ GoTo GWCamSinglyConfigure
 :GWCamChangeIPfromTemptoRegular
 Echo     Cambio l'indirizzo della telecamera
 curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=setConfig&Network.eth0.IPAddress=%NetworkIP%%Subnet%.%RegularCamIP1%"
+set TempCamIP1=%RegularCamIP1%
 if %errorlevel%==0 set GWCamChangeIPfromTemptoRegular=Yes
 Choice /N /T 10 /D N /M "Dopo 10 secondi si aprirà il menu precedente"
 GoTo GWCamSinglyConfigure
@@ -996,6 +1033,26 @@ curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%Tem
 if %errorlevel%==0 set GWCamEmail=Yes
 Choice /N /T 10 /D N /M "Dopo 10 secondi si aprirà il menu precedente"
 GoTo GWCamSinglyConfigure
+
+
+:GWThermographyOptions
+cls
+color 1F
+echo      ************************************************************************************************************
+echo                                                DAHUA HTTP API CONFIGURATOR
+echo      ************************************************************************************************************
+echo                                                   Thermography Options 
+echo      ************************************************************************************************************
+echo      [+]Leggo i dati Termografici:
+echo.
+curl --user admin:%TempPass% --digest --globoff "http://%NetworkIP%%Subnet%.%TempCamIP1%/cgi-bin/configManager.cgi?action=getConfig&name=ThermographyOptions
+echo.
+echo      1 - Modificare i parametri?
+echo      p - Torna al menu precedente
+CHOICE /N /C 1p /M "Cosa fare? "
+if %errorlevel%==1 GoTO GWCamQuestionAboutFTP
+if %errorlevel%==2 GoTO ConfigGWCam
+
 
 
 Rem +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
